@@ -8,9 +8,23 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-function generateRandomString() {
-
+// Helper function to create put the url into the shortURL
+const addNewURL = longURL => {
+      // generate an Id for the short URL
+  const shortURL = Math.random().toString(36).substr(2,8);
+      // create a new urll object
+      console.log(shortURL)
+  const newURL = {
+    [shortURL]: longURL,
+  };
+  console.log(newURL)
+      // Add it to urlDataBasecd
+  urlDatabase[shortURL] = longURL;
+      // return it // displays on the show page
+  return shortURL;
 }
+
+
 const bodyParser = require("body-parser");
 
 
@@ -22,18 +36,25 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
+
+// create a new url and add to DB
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  if (res.statusCode !== 200) {
-    const msg = `Status Code ${res.statusCode} when fetching IP. Response: ${body}`;
-    callback(Error(msg), null);
-    return;
-  }
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  // extract the info contained in the form
+  const longURL = req.body['longURL']; 
+  // console.log("CONTENT", longURL);
+  // create a new url in the database
+  const shortURL = addNewURL(longURL);
+  // console.log(`shortURL in post: ${shortURL}`); 
+  res.redirect(`/urls/${shortURL}`);
 });
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
+
+//Redirecting Short URLs to the long url
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
+  //status code: 302 --> temporarily to a new page
+});
+
 
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase};
@@ -41,12 +62,17 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+// rendering submit page
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
-  
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: (Object.keys(urlDatabase)[0]), longURL: urlDatabase.cp24cp24 };
+  let templateVars = { 
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[`${req.params.shortURL}`],
+  };
+
+
   res.render("urls_show", templateVars);
 });
