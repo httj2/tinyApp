@@ -13,11 +13,11 @@ const addNewURL = longURL => {
       // generate an Id for the short URL
   const shortURL = Math.random().toString(36).substr(2,8);
       // create a new urll object
-      console.log(shortURL)
+      // console.log(shortURL)
   const newURL = {
     [shortURL]: longURL,
   };
-  console.log(newURL)
+  // console.log(newURL)
       // Add it to urlDataBasecd
   urlDatabase[shortURL] = longURL;
       // return it // displays on the show page
@@ -58,6 +58,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase};
+  console.log(templateVars)
   // let templateVars = { greeting: 'Welcome!!' };
   res.render("urls_index", templateVars);
 });
@@ -75,4 +76,19 @@ app.get("/urls/:shortURL", (req, res) => {
 
 
   res.render("urls_show", templateVars);
+});
+
+// delete a quote from the DB - DELETE (POST)
+app.post('/urls/:shortURL/delete', (req, res) => {
+
+  console.log("DELETE HERE");
+  // extract the id from the url
+  const shortURL= req.params.shortURL;
+  console.log(`this is the: ${shortURL}`)
+  // delete it from the db
+  console.log(urlDatabase[shortURL]) 
+  delete urlDatabase[shortURL];
+  // redirect
+  res.redirect('/urls');
+
 });
