@@ -21,7 +21,7 @@
       <div>
         <% if(username){ %>
           <form action="/logout" method="POST" >
-            <p name="username" style= "display: inline; padding-right: 20px; text-transform: capitalize;">Logged in As: <%= username %>!</p>
+            <p name="username" style= "display: inline ">Logged in as: <p style="color:red; font-size: 18px; text-transform: capitalize; display: inline; padding-right: 20px;" ><%= username %></p></p>
             <button type="submit" class="btn btn-primary">Sign Out</button>
           </form>
         <% } else { %>
