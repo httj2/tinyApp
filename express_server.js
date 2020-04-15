@@ -2,15 +2,32 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 var cookieParser = require('cookie-parser');
+// const URLsRouter = require("./routes/urls");
+
 app.set('view engine', 'ejs');
 app.use(cookieParser());
 
+// app.use("/", URLsRouter);
+// app.use("/", userRouter);
 
+//======= url Database ===========
 const urlDatabase = {
   "cp24cp24": "http://www.cp24.com",
   "9sm5xK": "http://www.google.com"
 };
-
+// ===========user Database ============
+const usersDB = { 
+  "t93w12": {
+    id: "t93w12", 
+    email: "tw@gmail.com", 
+    password: "sports-r-coolr"
+  },
+ "3t1ech": {
+    id: "3t1ech", 
+    email: "thella@corigs.com", 
+    password: "chimken-4ever"
+  }
+}
 
 // Helper function to create put the url into the shortURL
 const addNewURL = longURL => {
@@ -23,7 +40,19 @@ const addNewURL = longURL => {
 const updateURL = (shortURL, longURL) => {
   urlDatabase[shortURL] = longURL;
 }
-
+// ========= Helper FN to creat e a newuser ============
+const addNewUser = content => {
+  const userID = Math.random().toString(36).substr(2,8);
+  console.log(userID);
+  console.log(usersDB[userID]);
+ const newUser = {
+   id: userID
+  //  email: usersDB[userID].email,
+  //  password:  usersDB[userID].password,
+ }
+  usersDB[userID] = newUser;
+ return userID
+}
 
 const bodyParser = require("body-parser");
 
@@ -31,6 +60,11 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 app.get("/", (req, res) => {
   res.send("Hello!");
+});
+
+//
+app.get("/register", (req, res) => {
+  res.render("user_registration")
 });
 
 //========= New URL to DB =================
@@ -46,12 +80,11 @@ app.post("/urls", (req, res) => {
 
 //
 app.get("/urls", (req, res) => {
-  const username = req.cookies["username"];
   // console.log(username)
   // console.log('Cookies: ', req.cookies)
   const templateVars = { 
     urls: urlDatabase,
-    username: username
+    username: req.cookies["username"]
   };
   // console.log(templateVars)
   res.render("urls_index", templateVars);
@@ -67,16 +100,21 @@ app.get("/u/:shortURL", (req, res) => {
 
 // ========= Submit new URL ================
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = { 
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[`${req.params.shortURL}`],
+    username: req.cookies["username"]
+  };
+  res.render("urls_new", templateVars);
 });
 
-
+// ======== showing all urls ============
 app.get("/urls/:shortURL", (req, res) => {
   
   let templateVars = { 
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[`${req.params.shortURL}`],
-    username: username
+    username: req.cookies["username"]
   };
   res.render("urls_show", templateVars);
 });
@@ -115,7 +153,6 @@ app.post('/login', (req, res) => {
   res.cookie("username", username);
   // res.redirect('/logout')
 // //  }
-  console.log(username)
   res.redirect('/urls/')
 })
 //======= logout ==========
@@ -126,7 +163,28 @@ app.post('/logout', (req, res) => {
   res.redirect('/urls/')
 });
 
+//====== registration form ======
+app.post('/register'), (req, res) => {
+  //extract the info form the form
+  const email = req.body['email']
+  console.log(`email: ${email}`);
+  const userID = addNewUser(email);
+  console.log(userID)
+  // const { password } = req.body;
+  // add new user to global usersDb
+  // user should include user's id, email and password
+  // generate a new unique id for each user
+  // set a user_id cookie containing the user's newly generated ID
+  // res.clearCookie("username", username)
+  //Redirect the user to the /urls page.
+  res.redirect('/urls/')
+}
+
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-// 
+
+
+
+// module.exports = app;
