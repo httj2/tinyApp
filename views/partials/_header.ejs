@@ -16,9 +16,9 @@
         <div class="navbar-nav">
           <a class="nav-item nav-link" href="/urls">My URLs</a>
           <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-          <a class="nav-item nav-link" href="/register">Register</a>
         </div>
       </div>
+<<<<<<< HEAD
 <<<<<<< HEAD
       <div>
         <% if(username){ %>
@@ -44,6 +44,19 @@
               <a class="nav-item nav-link" href="/login">Login</a> 
             <% } %>
           </div>
+>>>>>>> feature/user-registration
+=======
+      <div class="group 2">
+        <% if(!currentUser){ %> 
+          <a class="nav-item nav-link" href="/login">Login</a>
+          <a class="nav-item nav-link" href="/register">Register</a>
+        <% } else{ %> 
+          <p>Welcome, <%= currentUser.email %></p>
+            <form method="post" action="/logout">
+              <input type="submit" value="Logout">
+            </form>
+        <% } %>
+      </div>
 >>>>>>> feature/user-registration
     </nav>
   </header>
