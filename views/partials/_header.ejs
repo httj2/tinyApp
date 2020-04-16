@@ -16,21 +16,19 @@
         <div class="navbar-nav">
           <a class="nav-item nav-link" href="/urls">My URLs</a>
           <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+          <a class="nav-item nav-link" href="/register">Register</a>
         </div>
       </div>
-      <div>
-        <% if(username){ %>
-          <form action="/logout" method="POST" >
-            <p name="username" style= "display: inline; padding-right: 20px; text-transform: capitalize;">Logged in As: <%= username %>!</p>
-            <button type="submit" class="btn btn-primary">Sign Out</button>
-          </form>
-        <% } else { %>
-          <form action="/login" method="POST" >
-            <input type='text' name="username" placeholder='username'/>
-            <button type="submit" class="btn btn-primary">Sign In</button>
-          </form>
-          <% } %>
-      </div>
+          <div>
+            <% if(userEmail.length !== 0){ %>
+              <form action="/logout" method="POST" >
+                <p name="userEmail" style= "display: inline; padding-right: 20px">Logged in As: <%= userEmail %>!</p>
+                <button type="submit" class="btn btn-primary">Sign Out</button>
+              </form>
+            <% } else { %>
+              <a class="nav-item nav-link" href="/login">Login</a> 
+            <% } %>
+          </div>
     </nav>
   </header>
   
