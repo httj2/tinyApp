@@ -1,9 +1,10 @@
-// const express = require("express");
-// const { usersDB } = require('');
 const bcrypt = require('bcrypt');
+
+const uniqueId = Math.random().toString(36).substr(2,8);
+
 // ======= Add new URl ===========//
-const addNewURL = (longURL,userID, database) => {
-  const shortURL = Math.random().toString(36).substr(2,8);
+const addNewURL = (longURL, userID, database) => {
+  const shortURL = uniqueId;
   database[shortURL] = {
     longURL: longURL,
     userID: userID
@@ -11,13 +12,13 @@ const addNewURL = (longURL,userID, database) => {
   return shortURL;
 };
 
-const updateURL = (shortURL, longURL, database) => {
-  database[shortURL].longURL = longURL;
+const updateURL = (id, longURL, database) => {
+  database[id].longURL = longURL;
 }
 
 // ========= Add new user with newID  ============//
 const addNewUser = (email, password, database) => {
-  const userID = Math.random().toString(36).substr(2,8);
+  const userID = uniqueId;
   const newUser = {
    id: userID,
    email: email,
@@ -39,10 +40,10 @@ checkEmailExists = (email, database) => {
 const getUserByEmail = (email, database) => {
   for (let id in database) {
     if (database[id].email === email) {
-      return database[id];
+      return id;
     }
   };
-  return false
+  return undefined
 };
 
 
@@ -73,6 +74,7 @@ module.exports = {
   addNewUser,
   authenticateUser,
   checkEmailExists,
+  getUserByEmail,
   updateURL,
   urlsForUser
 }

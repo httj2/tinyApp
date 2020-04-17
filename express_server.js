@@ -57,25 +57,25 @@ const usersDB = {
 //============== GET ====================//
 
 //========== Display Login Form ==============//
-app.get("/login", (req, res)=> {
+app.get('/login', (req, res)=> {
   const templateVars = {
     currentUser: null
   };
-    res.render("user_login", templateVars)
+    res.render('user_login', templateVars)
 });
 // ========= Register Route =========//
-app.get("/register", (req, res) => {
+app.get('/register', (req, res) => {
   const templateVars = {
     currentUser: null,
   };
-  res.render("user_registration", templateVars)
+  res.render('user_registration', templateVars)
  
 
 });
 
 
 // ======= Url Index =========//
-app.get("/urls", (req, res) => {
+app.get('/urls', (req, res) => {
   //using user_ID look up the user of the usersDB;
   const userId = req.session.user_id;
   const loggedUser = usersDB[userId];
@@ -87,13 +87,13 @@ app.get("/urls", (req, res) => {
       urls: url,
       currentUser: loggedUser,
     };
-    res.render("urls_index", templateVars);
+    res.render('urls_index', templateVars);
   }
 });
 
 
 // === Redirecting short URLs to long URLS ==============
-app.get("/u/:shortURL", (req, res) => {
+app.get('/u/:shortURL', (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
   //status code: 302 --> temporarily to a new page
@@ -101,7 +101,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 
 // ========= Submit new URL ============ //
-app.get("/urls/new", (req, res) => {
+app.get('/urls/new', (req, res) => {
   // check if user is logged in 
   const userId = req.session.user_id;
   const loggedUser = usersDB[userId];
@@ -111,12 +111,12 @@ app.get("/urls/new", (req, res) => {
     let templateVars = {
       currentUser: loggedUser
     };
-    res.render("urls_new", templateVars);
+    res.render('urls_new', templateVars);
   }  
 });
 
 // ======== show specific URL =========== //
-app.get("/urls/:shortURL", (req, res) => {
+app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const userId = req.session.user_id;
   const loggedUser = usersDB[userId];
@@ -125,14 +125,14 @@ app.get("/urls/:shortURL", (req, res) => {
     longURL: urlDatabase[shortURL].longURL,
     currentUser: loggedUser
   };
-  res.render("urls_show", templateVars);
+  res.render('urls_show', templateVars);
 });
 
 
 //========******* POST ***********===========/ 
 
 //========= New URL to DB =================//
-app.post("/urls", (req, res) => {
+app.post('/urls', (req, res) => {
   const longURL = req.body['longURL']; 
   const userID = req.session.user_id;
   const shortURL = addNewURL(longURL, userID, urlDatabase);
@@ -147,7 +147,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
     delete urlDatabase[shortURL];
     res.redirect('/urls');
   } else {
-    res.send(`Sorry, cannot delete!`)
+    res.send('Sorry, cannot delete!')
   }
 });
 
@@ -157,19 +157,19 @@ app.post('/urls/:shortURL/edit', (req, res) => {
   if (req.session.user_id === urlDatabase[req.params.shortURL]['userID']) {
     res.redirect(`/urls/${shortURL}`);
   } else {
-    res.send(`Sorry, cannot Edit`)
+    res.send('Sorry, cannot Edit')
   }
    
 });
 //======= Update/Edit the URL ============ 
-app.post("/urls/:shortURL", (req, res) => {
+app.post('/urls/:shortURL', (req, res) => {
   // get editted URL 
   const editURL = req.body['editURL'];
   //take the shortURL in params
   const shortURL= req.params.shortURL;
   // update the URL
   updateURL(shortURL, editURL, urlDatabase);
-  res.redirect(`/urls/`);
+  res.redirect('/urls/');
 });
 
 // ======== Login ========== //
