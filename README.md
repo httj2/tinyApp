@@ -6,7 +6,7 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 !["Screenshot for urls page"](https://github.com/httj2/tinyApp/blob/master/doc/urls-page.png)
 !["Screenshot for register page"](https://github.com/httj2/tinyApp/blob/master/doc/register-page.png)
-<!-- !["Screenshot for register page"](https://github.com/httj2/tinyApp/blob/master/doc/register-page.png) -->
+!["Screenshot for shortURL page"](https://github.com/httj2/tinyApp/blob/master/doc/shortURL-page.png)
 
 ## Dependencies
 
