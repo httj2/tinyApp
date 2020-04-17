@@ -23,7 +23,7 @@ const urlDatabase = {
   },
   "9sm5xK": {
   longURL: "http://www.google.com",
-  userID: "aJ48lW"
+  userID: "3t1ech"
   }
 };
 // ===========user Database ============
@@ -105,8 +105,17 @@ const authenticateUser = (email, password) => {
     };
     return false;
   };
-
-
+// ======== Only display URLs for user's urls=====// 
+  const urlsForUser = function(id) { 
+    // take in an id 
+    const userURL = {};
+    for (shortURL in urlDatabase) { 
+      if (urlDatabase[shortURL].userID === id) {
+        userURL[shortURL] = urlDatabase[shortURL].longURL;
+      }
+    }
+   return userURL;
+  };
 
 //============== GET ====================//
 
@@ -131,11 +140,16 @@ app.get("/urls", (req, res) => {
   //using user_ID look up the user of the usersDB;
   const userId = req.cookies['user_id'];
   const loggedUser = usersDB[userId];
-  const templateVars = {
-    urls: urlDatabase,
-    currentUser: loggedUser,
-  };
-  res.render("urls_index", templateVars);
+  const url = urlsForUser(req.cookies['user_id']);
+  if (!loggedUser) {
+    res.send('Please go to http://localhost:8080/login/ and login or register!')
+  } else {
+    const templateVars = {
+      urls: url,
+      currentUser: loggedUser,
+    };
+    res.render("urls_index", templateVars);
+  }
 });
 
 
@@ -150,7 +164,6 @@ app.get("/u/:shortURL", (req, res) => {
 // ========= Submit new URL ============ //
 app.get("/urls/new", (req, res) => {
   // check if user is logged in 
-  const shortURL = req.params.shortURL;
   const userId = req.cookies['user_id'];
   const loggedUser = usersDB[userId];
   if (!loggedUser) {
@@ -189,18 +202,25 @@ app.post("/urls", (req, res) => {
 
 // ============= Delete URL ====================
 app.post('/urls/:shortURL/delete', (req, res) => {
-  const shortURL= req.params.shortURL;
-  delete urlDatabase[shortURL];
-  // redirect
-  res.redirect('/urls');
   
+  const shortURL= req.params.shortURL;
+  if (req.cookies.user_id === urlDatabase[req.params.shortURL]['userID']) {
+    delete urlDatabase[shortURL];
+    res.redirect('/urls');
+  } else {
+    res.send(`Sorry, cannot delete!`)
+  }
 });
 
 // =========== Edit URL on index page =====================
 app.post('/urls/:shortURL/edit', (req, res) => {
   const shortURL= req.params.shortURL;
-  res.redirect(`/urls/${shortURL}`);
-  
+  if (req.cookies.user_id === urlDatabase[req.params.shortURL]['userID']) {
+    res.redirect(`/urls/${shortURL}`);
+  } else {
+    res.send(`Sorry, cannot Edit`)
+  }
+   
 });
 //======= Update/Edit the URL ============ 
 app.post("/urls/:shortURL", (req, res) => {
