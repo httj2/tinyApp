@@ -39,7 +39,7 @@ const urlDatabase = {
   userID: "3t1ech"
   }
 };
-// ===========user Database ============//
+// ===========User Database ============//
 const usersDB = {
   "t93w12": {
     id: "t93w12",
@@ -144,16 +144,27 @@ app.get('/register', (req, res) => {
 app.post('/urls', (req, res) => {
   const longURL = req.body['longURL']; 
   const userID = req.session.user_id;
-  const shortURL = addNewURL(longURL, userID, urlDatabase);
-  res.redirect(`/urls/${shortURL}`);
+  if (!userID) {
+    res.redirect('/login')
+  } else{
+    const shortURL = addNewURL(longURL, userID, urlDatabase);
+    res.redirect(`/urls/${shortURL}`);
+  }
 });
 
 //======= Update/Edit the URL ============ //
 app.post('/urls/:shortURL', (req, res) => {
   const editURL = req.body['editURL'];
   const shortURL= req.params.shortURL;
-  updateURL(shortURL, editURL, urlDatabase);
-  res.redirect('/urls/');
+  const userID = req.session.user_id;
+  if (!userID) { 
+    res.redirect('/login')
+  } else if (req.session.user_id === urlDatabase[shortURL]['userID']) { 
+    updateURL(shortURL, editURL, urlDatabase);
+    res.redirect('/urls/');
+  } else {
+    res.send('URL doesnt belong to user!')
+  }
 });
 
 // ============= Delete URL ====================//
@@ -169,7 +180,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 // =========== Edit URL on index page ===================//
 app.post('/urls/:shortURL/edit', (req, res) => {
   const shortURL= req.params.shortURL;
-  if (req.session.user_id === urlDatabase[req.params.shortURL]['userID']) {
+  if (req.session.user_id === urlDatabase[shortURL]['userID']) {
     res.redirect(`/urls/${shortURL}`);
   } else {
     res.send('Sorry, cannot Edit');
@@ -179,9 +190,7 @@ app.post('/urls/:shortURL/edit', (req, res) => {
 
 // ======== Login ========== //
 app.post('/login', (req, res) => {
-  const { email } = req.body;
-  const { password } = req.body;
-  // Authenticate the user
+  const { email, password } = req.body;
   const user = authenticateUser(email, password, usersDB);
   if (!user) {
     res.status(403).send(`Status Code: ${res.statusCode}. User is not registered!`);
@@ -201,9 +210,7 @@ app.post('/logout', (req, res) => {
 app.post('/register', (req, res) => {
   const { email } = req.body;
   const password  = bcrypt.hashSync(req.body.password, 10);
-  // check if the user is not alrady in the database
   const user = checkEmailExists(email, usersDB);
-  // if user is not in the DB, add the user to the db 
   if (!user) {
     if (email.length === 0 && password.length === 0) {
       res.status(400).send(`Status Code: ${res.statusCode}. Please enter an email and password`);
