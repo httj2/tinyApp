@@ -49,7 +49,6 @@ const getUserByEmail = (email, database) => {
 const authenticateUser = (email, password, database) => {
   const id = getUserByEmail(email, database); 
   const user = database[id];
-  console.log(`user: ${user}`)    //return user
   if (user && bcrypt.compareSync(password, user.password)) {
     return user;
   };
