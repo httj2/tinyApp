@@ -1,18 +1,26 @@
 const express = require("express");
-const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt');
+const uuid = require('uuid/v4');
+const app = express();
 // const URLsRouter = require("./routes/urls");
 app.set('view engine', 'ejs');
-app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
-const saltRounds= 10
-
 // app.use("/", URLsRouter);
 // app.use("/", userRouter);
 
+
+//  cookie session configure
+app.use(cookieSession({
+  name: 'session',
+  keys: [
+    '8f730fc4-47de-4sa1-a8cd-4f835325371'
+  ],
+  // Cookie Options (expires in 24 hours)
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}))
 
 //=============== DATABASES ==================//
 //======= url Database ===========
@@ -114,8 +122,7 @@ app.get("/login", (req, res)=> {
   const templateVars = {
     currentUser: null
   };
-    // res.render("user_login", templateVars)
-    res.json(usersDB);
+    res.render("user_login", templateVars)
 });
 // ========= Register Route =========//
 app.get("/register", (req, res) => {
@@ -131,9 +138,9 @@ app.get("/register", (req, res) => {
 // ======= Url Index =========//
 app.get("/urls", (req, res) => {
   //using user_ID look up the user of the usersDB;
-  const userId = req.cookies['user_id'];
+  const userId = req.session.user_id;
   const loggedUser = usersDB[userId];
-  const url = urlsForUser(req.cookies['user_id']);
+  const url = urlsForUser(userId);
   if (!loggedUser) {
     res.send('Please go to http://localhost:8080/login/ and login or register!')
   } else {
@@ -157,7 +164,7 @@ app.get("/u/:shortURL", (req, res) => {
 // ========= Submit new URL ============ //
 app.get("/urls/new", (req, res) => {
   // check if user is logged in 
-  const userId = req.cookies['user_id'];
+  const userId = req.session.user_id;
   const loggedUser = usersDB[userId];
   if (!loggedUser) {
     res.redirect('/login')
@@ -172,7 +179,7 @@ app.get("/urls/new", (req, res) => {
 // ======== show specific URL =========== //
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const userId = req.cookies['user_id'];
+  const userId = req.session.user_id;
   const loggedUser = usersDB[userId];
   let templateVars = { 
     shortURL: shortURL, 
@@ -188,7 +195,7 @@ app.get("/urls/:shortURL", (req, res) => {
 //========= New URL to DB =================//
 app.post("/urls", (req, res) => {
   const longURL = req.body['longURL']; 
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;
   const shortURL = addNewURL(longURL, userID);
   res.redirect(`/urls/${shortURL}`);
 });
@@ -197,7 +204,7 @@ app.post("/urls", (req, res) => {
 app.post('/urls/:shortURL/delete', (req, res) => {
   
   const shortURL= req.params.shortURL;
-  if (req.cookies.user_id === urlDatabase[req.params.shortURL]['userID']) {
+  if (req.session.user_id === urlDatabase[req.params.shortURL]['userID']) {
     delete urlDatabase[shortURL];
     res.redirect('/urls');
   } else {
@@ -208,7 +215,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 // =========== Edit URL on index page =====================
 app.post('/urls/:shortURL/edit', (req, res) => {
   const shortURL= req.params.shortURL;
-  if (req.cookies.user_id === urlDatabase[req.params.shortURL]['userID']) {
+  if (req.session.user_id === urlDatabase[req.params.shortURL]['userID']) {
     res.redirect(`/urls/${shortURL}`);
   } else {
     res.send(`Sorry, cannot Edit`)
@@ -236,14 +243,15 @@ app.post('/login', (req, res) => {
   if (!user) {
     res.status(403).send(`Status Code: ${res.statusCode}. User is not registered!`);
   } else {
-    res.cookie('user_id', user.id);
+    // res.cookie('user_id', user.id);
+    req.session.user_id = user.id
     res.redirect('/urls')
   }
 });
 //======= logout ==========
 app.post('/logout', (req, res) => {
-  res.cookie('user_id', null)
-  // res.clearCookie("user_id", user_id);
+  // res.cookie('user_id', null)
+  req.session.user_id = null;
   res.redirect('/urls/');
 });
 
@@ -251,7 +259,6 @@ app.post('/logout', (req, res) => {
 app.post('/register', (req, res) => {
   const { email } = req.body;
   const password  = bcrypt.hashSync(req.body.password, 10)
-  console.log(password)
   // check if the user is not alrady in the database
   const user = checkEmailExists(email);
   // if user is not in the DB, add the user to the db 
@@ -261,8 +268,9 @@ app.post('/register', (req, res) => {
     } 
     const userId = addNewUser(email, password);
     // setCookie with the userId
-    res.cookie('user_id', userId)
-    res.redirect('/urls/')
+    // res.cookie('user_id', userId)
+    req.session.user_id = userId;
+    res.redirect('/urls/');
   } else {
     res.status(400).send(`Status Code: ${res.statusCode}. Already registered!`)
   }
