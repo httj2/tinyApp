@@ -3,14 +3,19 @@ const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt');
-const uuid = require('uuid/v4');
 const app = express();
-// const URLsRouter = require("./routes/urls");
+
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
-// app.use("/", URLsRouter);
-// app.use("/", userRouter);
 
+const {
+  addNewURL,
+  addNewUser,
+  authenticateUser,
+  checkEmailExists,
+  updateURL,
+  urlsForUser
+} = require('./helpers');
 
 //  cookie session configure
 app.use(cookieSession({
@@ -47,73 +52,8 @@ const usersDB = {
     password: "chimken4ever"
   }
 };
-//================ HELPER FUNCTIONS ====================//
-// ======= Add new URl ===========//
-const addNewURL = (longURL,userID) => {
-  const shortURL = Math.random().toString(36).substr(2,8);
-  urlDatabase[shortURL] = {
-    longURL: longURL,
-    userID: userID
-  }
-  return shortURL;
-};
-
-const updateURL = (shortURL, longURL) => {
-  urlDatabase[shortURL].longURL = longURL;
-}
-// ========= Add new user with newID  ============//
-const addNewUser = (email, password) => {
-  const userID = Math.random().toString(36).substr(2,8);
-  const newUser = {
-   id: userID,
-   email: email,
-   password: password
-  };
-  usersDB[userID] = newUser;
-  return userID;
-};
 
 
-// ========== checkEmail ===========//
-checkEmailExists = (loginEmail) => {
-  for (let id in usersDB) {
-    if (usersDB[id].email === loginEmail) {
-      return true;
-    }
-  };
-  return false;
-};
-// =======  Get user by email & password ======== ///
-const getUserByEmail = function(email) {
-  for (let id in usersDB) {
-    if (usersDB[id].email === email) {
-      return usersDB[id];
-    }
-  };
-  return false
-};
-
-
-// AuthenticateUser if its in the UsersDB.
-const authenticateUser = (email, password) => {
-  const user = getUserByEmail(email);     //return user
-  if (user && bcrypt.compareSync(password, user.password)) {
-    return user;
-  };
-  return false;
-};
-
-// ======== Only display URLs for user's urls=====// 
-  const urlsForUser = function(id) { 
-    // take in an id 
-    const userURL = {};
-    for (shortURL in urlDatabase) { 
-      if (urlDatabase[shortURL].userID === id) {
-        userURL[shortURL] = urlDatabase[shortURL].longURL;
-      }
-    }
-   return userURL;
-  };
 
 //============== GET ====================//
 
@@ -140,7 +80,7 @@ app.get("/urls", (req, res) => {
   //using user_ID look up the user of the usersDB;
   const userId = req.session.user_id;
   const loggedUser = usersDB[userId];
-  const url = urlsForUser(userId);
+  const url = urlsForUser(userId, urlDatabase);
   if (!loggedUser) {
     res.send('Please go to http://localhost:8080/login/ and login or register!')
   } else {
@@ -196,7 +136,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls", (req, res) => {
   const longURL = req.body['longURL']; 
   const userID = req.session.user_id;
-  const shortURL = addNewURL(longURL, userID);
+  const shortURL = addNewURL(longURL, userID, urlDatabase);
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -229,7 +169,7 @@ app.post("/urls/:shortURL", (req, res) => {
   //take the shortURL in params
   const shortURL= req.params.shortURL;
   // update the URL
-  updateURL(shortURL, editURL);
+  updateURL(shortURL, editURL, urlDatabase);
   res.redirect(`/urls/`);
 });
 
@@ -260,13 +200,13 @@ app.post('/register', (req, res) => {
   const { email } = req.body;
   const password  = bcrypt.hashSync(req.body.password, 10)
   // check if the user is not alrady in the database
-  const user = checkEmailExists(email);
+  const user = checkEmailExists(email, usersDB);
   // if user is not in the DB, add the user to the db 
   if (!user) {
     if (email.length === 0 && password.length === 0) {
       res.status(400).send(`Status Code: ${res.statusCode}. Please enter an email and password`)
     } 
-    const userId = addNewUser(email, password);
+    const userId = addNewUser(email, password, usersDB);
     // setCookie with the userId
     // res.cookie('user_id', userId)
     req.session.user_id = userId;
@@ -281,6 +221,3 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-
-
-// module.exports = app;
