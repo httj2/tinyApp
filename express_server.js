@@ -4,10 +4,6 @@ const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt');
 const app = express();
-
-app.set('view engine', 'ejs');
-app.use(bodyParser.urlencoded({extended: true}));
-
 const {
   addNewURL,
   addNewUser,
@@ -16,6 +12,9 @@ const {
   updateURL,
   urlsForUser
 } = require('./helpers');
+
+app.set('view engine', 'ejs');
+app.use(bodyParser.urlencoded({extended: true}));
 
 //  cookie session configure
 app.use(cookieSession({
