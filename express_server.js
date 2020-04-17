@@ -163,7 +163,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
     delete urlDatabase[shortURL];
     res.redirect('/urls');
   } 
-  res.re
+  res.send('URL doesnt belong to user!')
 });
 
 // =========== Edit URL on index page ===================//
