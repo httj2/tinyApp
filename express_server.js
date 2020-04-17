@@ -3,12 +3,12 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
-
+const bcrypt = require('bcrypt');
 // const URLsRouter = require("./routes/urls");
-
 app.set('view engine', 'ejs');
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
+const saltRounds= 10
 
 // app.use("/", URLsRouter);
 // app.use("/", userRouter);
@@ -89,22 +89,12 @@ const getUserByEmail = function(email) {
 // AuthenticateUser if its in the UsersDB.
 const authenticateUser = (email, password) => {
   const user = getUserByEmail(email);     //return user
-  if (user && user.password === password) {
+  if (user && bcrypt.compareSync(password, user.password)) {
     return user;
   };
   return false;
 };
 
-
-// check password 
-  const checkPassword = function(loginPassword) {
-    for (let user in usersDB) {
-      if (usersDB[user].password === loginPassword) {
-        return true;
-      }
-    };
-    return false;
-  };
 // ======== Only display URLs for user's urls=====// 
   const urlsForUser = function(id) { 
     // take in an id 
@@ -124,7 +114,8 @@ app.get("/login", (req, res)=> {
   const templateVars = {
     currentUser: null
   };
-    res.render("user_login", templateVars)
+    // res.render("user_login", templateVars)
+    res.json(usersDB);
 });
 // ========= Register Route =========//
 app.get("/register", (req, res) => {
@@ -132,6 +123,8 @@ app.get("/register", (req, res) => {
     currentUser: null,
   };
   res.render("user_registration", templateVars)
+ 
+
 });
 
 
@@ -240,14 +233,12 @@ app.post('/login', (req, res) => {
 
   // Authenticate the user
   const user = authenticateUser(email, password, usersDB);
-  if(user) {
+  if (!user) {
+    res.status(403).send(`Status Code: ${res.statusCode}. User is not registered!`);
+  } else {
     res.cookie('user_id', user.id);
     res.redirect('/urls')
-  } else if (checkEmailExists(email) === true & (checkPassword(password) === false)){
-    res.status(403).send(`Status Code: ${res.statusCode}. Password is incorrect`);
-  } else {
-    res.status(403).send(`Status Code: ${res.statusCode}. User is not registered!`);
-  };
+  }
 });
 //======= logout ==========
 app.post('/logout', (req, res) => {
@@ -259,7 +250,8 @@ app.post('/logout', (req, res) => {
 //====== registration form ======
 app.post('/register', (req, res) => {
   const { email } = req.body;
-  const { password } = req.body;
+  const password  = bcrypt.hashSync(req.body.password, 10)
+  console.log(password)
   // check if the user is not alrady in the database
   const user = checkEmailExists(email);
   // if user is not in the DB, add the user to the db 
