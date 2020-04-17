@@ -1,24 +1,22 @@
 const bcrypt = require('bcrypt');
 
-const uniqueId = Math.random().toString(36).substr(2,8);
-
 // ======= Add new URl ===========//
 const addNewURL = (longURL, userID, database) => {
-  const shortURL = uniqueId;
-  database[shortURL] = {
+  const shortURL = Math.random().toString(36).substr(2,8);
+    database[shortURL] = {
     longURL: longURL,
     userID: userID
   }
   return shortURL;
 };
 
-const updateURL = (id, longURL, database) => {
-  database[id].longURL = longURL;
+const updateURL = (shortURL, longURL, database) => {
+  database[shortURL].longURL = longURL;
 }
 
 // ========= Add new user with newID  ============//
 const addNewUser = (email, password, database) => {
-  const userID = uniqueId;
+  const userID = Math.random().toString(36).substr(2,8);
   const newUser = {
    id: userID,
    email: email,
@@ -47,9 +45,11 @@ const getUserByEmail = (email, database) => {
 };
 
 
-// AuthenticateUser if its in the UsersDB.
+// === AuthenticateUser if its in the UsersDB =====//
 const authenticateUser = (email, password, database) => {
-  const user = getUserByEmail(email, database);     //return user
+  const id = getUserByEmail(email, database); 
+  const user = database[id];
+  console.log(`user: ${user}`)    //return user
   if (user && bcrypt.compareSync(password, user.password)) {
     return user;
   };
