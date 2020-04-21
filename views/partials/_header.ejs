@@ -4,6 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TinyApp</title>
+  <style>
+    .navNew{
+      color: white;
+      display: inline;
+    }
+    .logoutBtn{
+      border-radius: 5px; 
+      background: lightgrey; 
+      width: 100px; 
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -20,12 +31,12 @@
       </div>
       <div class="group 2">
         <% if(!currentUser){ %> 
-          <a style="display: inline; color: white;" class="nav-item nav-link" href="/login">Login</a>
-          <a style="display: inline; color: white;" class="nav-item nav-link" href="/register">Register</a>
-        <% } else{ %> 
-          <p style="color:  white; display: inline;">Welcome, <%= currentUser.email %> </p>
+          <a class="nav-item nav-link navNew" href="/login">Login</a>
+          <a class="nav-item nav-link navNew" href="/register">Register</a>
+        <% } else { %> 
+          <p class="nav-item nav-link navNew">Welcome, <%= currentUser.email %> </p>
             <form method="post" action="/logout" style="display: inline; margin-left: 20px">
-              <input type="submit" value="Logout" style="border-radius: 5px; background: lightgrey; width: 100px; ">
+              <input type="submit" value="Logout" class="logoutBtn">
             </form>
         <% } %>
       </div>
